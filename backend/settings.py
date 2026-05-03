@@ -79,6 +79,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:9002",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:9002",
+    "https://api-playground.aideed.online",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
@@ -86,6 +87,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:9002",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:9002",
+    "https://api-playground.aideed.online",
 ]
 SESSION_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SECURE = False
