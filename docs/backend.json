@@ -1,0 +1,55 @@
+
+{
+  "entities": {
+    "ApiRequest": {
+      "title": "ApiRequest",
+      "description": "A record of an API request and its response history.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The ID of the user who made the request" },
+        "method": { "type": "string", "description": "HTTP Method (GET, POST, etc.)" },
+        "url": { "type": "string", "description": "The target URL" },
+        "headers": { "type": "object", "description": "Request headers" },
+        "body": { "type": "string", "description": "Request body string" },
+        "response": {
+          "type": "object",
+          "properties": {
+            "status": { "type": "number" },
+            "statusText": { "type": "string" },
+            "time": { "type": "string" },
+            "size": { "type": "string" },
+            "headers": { "type": "object" },
+            "body": { "type": "string" }
+          }
+        },
+        "timestamp": { "type": "object", "description": "Firestore server timestamp" },
+        "isFavorite": { "type": "boolean" }
+      },
+      "required": ["userId", "method", "url", "timestamp"]
+    },
+    "Collection": {
+      "title": "Collection",
+      "description": "A group of saved API requests.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "requestCount": { "type": "number" }
+      },
+      "required": ["userId", "name"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com"]
+  },
+  "firestore": {
+    "requests/{requestId}": {
+      "schema": { "$ref": "#/entities/ApiRequest" },
+      "description": "Global request history filtered by userId"
+    },
+    "collections/{collectionId}": {
+      "schema": { "$ref": "#/entities/Collection" },
+      "description": "User API request collections"
+    }
+  }
+}
