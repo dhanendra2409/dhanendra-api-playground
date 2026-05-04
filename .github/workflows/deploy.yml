@@ -1,0 +1,63 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: SSH into EC2 and Deploy
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          cd /home/ubuntu/projects/dhanendra-api-playground
+          
+          # Reset local changes and pull latest code
+          git fetch origin main
+          git reset --hard origin/main
+          
+          # 1. Setup Django Backend
+          if [ -d "backend_env" ]; then
+            source backend_env/bin/activate
+          else
+            python3 -m venv backend_env
+            source backend_env/bin/activate
+          fi
+          
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          python manage.py migrate
+          python manage.py collectstatic --noinput
+
+          # 2. Setup Next.js Frontend
+          npm install
+          npm run build
+
+          # 3. Restart application via PM2
+          # Start or restart Django backend
+          pm2 describe django-backend > /dev/null
+          if [ $? -eq 0 ]; then
+            pm2 restart django-backend
+          else
+            pm2 start "gunicorn backend.wsgi:application --bind 0.0.0.0:8000" --name django-backend
+          fi
+
+          # Start or restart Next.js frontend
+          pm2 describe next-frontend > /dev/null
+          if [ $? -eq 0 ]; then
+            pm2 restart next-frontend
+          else
+            pm2 start npm --name next-frontend -- start
+          fi
+
+          # Save PM2 process list to restore on reboot
+          pm2 save
